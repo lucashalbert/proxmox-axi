@@ -9,7 +9,7 @@ export type Wire = Record<string, string[]>;
 export type Req = { method: string; url: string; auth: string; body?: string };
 
 const TIMEOUT_MS = 30_000;
-const SECRET = /(^|[-_])(password|secret|token|key)([-_]|$)/i;
+const SECRET = /(password|secret|token)|(^|[-_])key([-_]|$)|key$/i;
 const hex = (s: string) => s.replace(/[^0-9a-f]/gi, "").toUpperCase();
 
 /** Query string for GET/DELETE, form body for POST/PUT. Arrays repeat the key. */

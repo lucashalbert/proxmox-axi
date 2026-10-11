@@ -94,6 +94,16 @@ describe("requests", () => {
     expect(srv.seen).toHaveLength(0);
   });
 
+  it("--dry-run redacts substring secret body fields", async () => {
+    srv.seen.length = 0;
+    const r = await run(["create", "/nodes/{node}/qemu", "--vmid", "999", "--cipassword", "cloud-secret", "-n"], env);
+    expect(r.code).toBe(0);
+    expect(r.out).toContain("cipassword");
+    expect(r.out).toContain("<redacted>");
+    expect(r.out).not.toContain("cloud-secret");
+    expect(srv.seen).toHaveLength(0);
+  });
+
   it("--dry-run redacts secret-like query fields", async () => {
     const r = await run(["get", "/nodes/{node}/scan/cifs", "-n", "--server", "nas.test", "--username", "user", "--password", "query-secret"], env);
     expect(r.code).toBe(0);

@@ -79,8 +79,10 @@ export function parseFlags(
       continue;
     }
     if (!apiOwned && (name === "fields" || name === "limit")) {
-      const v = inline ?? tokens[++i];
-      if (v === undefined) throw bad(`--${name} needs a value`, []);
+      let v = inline;
+      if (v === undefined) v = tokens[i + 1];
+      if (v === undefined || v.startsWith("--")) throw bad(`--${name} needs a value`, []);
+      if (inline === undefined) i++;
       if (name === "fields") control.fields = v;
       else if (/^\d+$/.test(v)) control.limit = Number(v);
       else throw bad(`--limit expects a non-negative integer (0 = all), got "${v}"`, []);

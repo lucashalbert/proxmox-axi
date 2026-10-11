@@ -35,6 +35,17 @@ describe("flag validation", () => {
     expect(r.out).toContain("--newid needs a value");
   });
 
+  it.each([
+    ["fields", "--fields", "--full"],
+    ["fields", "--fields=--full"],
+    ["limit", "--limit", "--full"],
+    ["limit", "--limit=--full"],
+  ])("rejects --%s when its value starts with --", async (name, ...flags) => {
+    const r = await run(["get", "/nodes", ...flags], env);
+    expect(r.code).toBe(2);
+    expect(r.out).toContain(`--${name} needs a value`);
+  });
+
   it("encodes booleans as 1/0 in all spellings", async () => {
     for (const [flags, want] of [[["--full"], "1"], [["--full=0"], "0"], [["--full", "false"], "0"], [["--full", "yes"], "1"]] as const) {
       const r = await dry("create", "/nodes/pve/qemu/100/clone", "--newid", "101", ...flags);
@@ -68,6 +79,24 @@ describe("flag validation", () => {
     const r = await dry("delete", "/version");
     expect(r.code).toBe(2);
     expect(r.out).toContain("Available here: get");
+  });
+
+  it.each(["post", "put"])("does not expose %s as a verb", async (verb) => {
+    const r = await run([verb, "/version", "-n"], env);
+    expect(r.code).toBe(2);
+  });
+
+  it.each([
+    ["create", "/access/ticket"],
+    ["set", "/access/password"],
+    ["create", "/access/tfa/{userid}"],
+    ["delete", "/access/tfa/{userid}/{id}"],
+    ["set", "/access/tfa/{userid}/{id}"],
+  ])("marks %s %s as not callable with API tokens", async (verb, path) => {
+    const r = await run([verb, path, "--help"], env);
+    expect(r.code).toBe(0);
+    expect(r.out).toContain("not allowed with API tokens");
+    expect(r.out).toContain("needs ticket auth");
   });
 
   it("points at valid segments for an unknown path", async () => {

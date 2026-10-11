@@ -27,9 +27,7 @@ export type SNode = { path: string; info?: Record<string, Info>; children?: SNod
 export const VERBS: Record<string, string> = {
   get: "GET",
   create: "POST",
-  post: "POST",
   set: "PUT",
-  put: "PUT",
   delete: "DELETE",
 };
 export const VERB_OF: Record<string, string> = { GET: "get", POST: "create", PUT: "set", DELETE: "delete" };

@@ -23,7 +23,7 @@ Environment variables, or `KEY=VALUE` lines in `~/.config/proxmox-axi/config` (o
 | `PROXMOX_INSECURE` | `1` to skip TLS verification (or pass `--insecure`) |
 | `PROXMOX_NODE` | default for the `{node}` path segment |
 
-Token auth only; ticket/password login is not implemented.
+Token auth only; ticket/password login is not implemented. The bundled schema includes five endpoints that Proxmox marks as not callable with API tokens: `POST /access/ticket`, `PUT /access/password`, `POST /access/tfa/{userid}`, `DELETE /access/tfa/{userid}/{id}`, and `PUT /access/tfa/{userid}/{id}`. Their endpoint help says so.
 
 ## Use
 

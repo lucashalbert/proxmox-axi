@@ -84,7 +84,7 @@ export const VERB_HELP: Record<string, string> = Object.fromEntries(
 export async function callCommand(verb: string, args: string[], cfg: Config): Promise<Out | string> {
   const method = VERBS[verb];
   const path = args[0];
-  if (!path || path === "--help") return VERB_HELP[verb === "post" ? "create" : verb === "put" ? "set" : verb] ?? "";
+  if (!path || path === "--help") return VERB_HELP[verb] ?? "";
   if (!path.startsWith("/")) throw bad(`Expected an API path starting with /, got ${path}`, [`Run \`proxmox-axi ls /\` to browse paths`]);
 
   const r = resolve(path);

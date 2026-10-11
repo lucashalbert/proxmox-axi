@@ -63,6 +63,44 @@ describe("requests", () => {
     expect(r.out).not.toContain("s3cr3t-value");
   });
 
+  it("--dry-run redacts secret-like body fields", async () => {
+    srv.seen.length = 0;
+    const r = await run(
+      [
+        "create",
+        "/cluster/notifications/endpoints/smtp",
+        "--name",
+        "mail",
+        "--server",
+        "smtp.test",
+        "--from-address",
+        "pve@test.invalid",
+        "--mailto",
+        "a@test.invalid",
+        "--username",
+        "user",
+        "--password",
+        "body-secret",
+        "--author",
+        "visible",
+        "--dry-run",
+      ],
+      env,
+    );
+    expect(r.code).toBe(0);
+    expect(r.out).toContain("<redacted>");
+    expect(r.out).toContain("visible");
+    expect(r.out).not.toContain("body-secret");
+    expect(srv.seen).toHaveLength(0);
+  });
+
+  it("--dry-run redacts secret-like query fields", async () => {
+    const r = await run(["get", "/nodes/{node}/scan/cifs", "-n", "--server", "nas.test", "--username", "user", "--password", "query-secret"], env);
+    expect(r.code).toBe(0);
+    expect(r.out).toContain("password=%3Credacted%3E");
+    expect(r.out).not.toContain("query-secret");
+  });
+
   it("encodes path values and query parameters", async () => {
     const r = await run(["get", "/nodes/{node}/capabilities", "-n", "--node", "a b"], env);
     expect(r.out).toContain("/nodes/a%20b/capabilities");

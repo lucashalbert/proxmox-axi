@@ -143,7 +143,8 @@ export function lsCommand(args: string[]): Out {
   let grep: string | undefined;
   for (let i = 0; i < rest.length; i++) {
     if (rest[i] === "--all") all = true;
-    else if (rest[i] === "--grep" && rest[i + 1]) grep = rest[++i].toLowerCase();
+    else if (rest[i] === "--grep" && rest[i + 1] && !rest[i + 1].startsWith("-")) grep = rest[++i].toLowerCase();
+    else if (rest[i] === "--grep") throw bad("--grep needs a value");
     else throw bad(`Unknown argument ${rest[i]} for \`ls\``, ["Valid: [path] --all --grep <text> (--help always allowed)"]);
   }
   const r = resolve(path);

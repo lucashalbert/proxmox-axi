@@ -38,12 +38,22 @@ describe("flag validation", () => {
   it.each([
     ["fields", "--fields", "--full"],
     ["fields", "--fields=--full"],
+    ["fields", "--fields", "-n"],
+    ["fields", "--fields=-n"],
     ["limit", "--limit", "--full"],
     ["limit", "--limit=--full"],
-  ])("rejects --%s when its value starts with --", async (name, ...flags) => {
+    ["limit", "--limit", "-n"],
+    ["limit", "--limit=-n"],
+  ])("rejects --%s when its value looks like a flag", async (name, ...flags) => {
     const r = await run(["get", "/nodes", ...flags], env);
     expect(r.code).toBe(2);
     expect(r.out).toContain(`--${name} needs a value`);
+  });
+
+  it.each([["--all"], ["-n"]])("rejects ls --grep before %s", async (flag) => {
+    const r = await run(["ls", "/", "--grep", flag], env);
+    expect(r.code).toBe(2);
+    expect(r.out).toContain("--grep needs a value");
   });
 
   it("encodes booleans as 1/0 in all spellings", async () => {

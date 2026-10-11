@@ -81,7 +81,7 @@ export function parseFlags(
     if (!apiOwned && (name === "fields" || name === "limit")) {
       let v = inline;
       if (v === undefined) v = tokens[i + 1];
-      if (v === undefined || v.startsWith("--")) throw bad(`--${name} needs a value`, []);
+      if (v === undefined || v.startsWith("-")) throw bad(`--${name} needs a value`, []);
       if (inline === undefined) i++;
       if (name === "fields") control.fields = v;
       else if (/^\d+$/.test(v)) control.limit = Number(v);

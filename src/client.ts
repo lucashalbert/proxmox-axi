@@ -9,6 +9,7 @@ export type Wire = Record<string, string[]>;
 export type Req = { method: string; url: string; auth: string; body?: string };
 
 const TIMEOUT_MS = 30_000;
+const SECRET = /(^|[-_])(password|secret|token|key)([-_]|$)/i;
 const hex = (s: string) => s.replace(/[^0-9a-f]/gi, "").toUpperCase();
 
 /** Query string for GET/DELETE, form body for POST/PUT. Arrays repeat the key. */
@@ -30,9 +31,24 @@ function bodyObject(body: string): Record<string, string | string[]> {
   const out: Record<string, string | string[]> = {};
   for (const [k, v] of new URLSearchParams(body)) {
     const prev = out[k];
-    out[k] = prev === undefined ? v : Array.isArray(prev) ? [...prev, v] : [prev, v];
+    const value = SECRET.test(k) ? "<redacted>" : v;
+    out[k] = prev === undefined ? value : Array.isArray(prev) ? [...prev, value] : [prev, value];
   }
   return out;
+}
+
+function redactedUrl(raw: string): string {
+  const q = raw.indexOf("?");
+  if (q < 0) return raw;
+  const params = new URLSearchParams(raw.slice(q + 1));
+  for (const [k] of params) {
+    if (SECRET.test(k)) params.set(k, "<redacted>");
+  }
+  return `${raw.slice(0, q)}?${params}`;
+}
+
+function redactAuth(auth: string): string {
+  return auth.replace(/=[^=]*$/, "=<redacted>");
 }
 
 /** Request as printed by --dry-run: the token secret never leaves the process. */
@@ -40,8 +56,8 @@ export function redacted(req: Req): Record<string, unknown> {
   const body = req.body ? bodyObject(req.body) : undefined;
   return {
     method: req.method,
-    url: req.url,
-    authorization: req.auth.replace(/=[^=]*$/, "=<redacted>"),
+    url: redactedUrl(req.url),
+    authorization: redactAuth(req.auth),
     ...(body ? { body } : {}),
   };
 }

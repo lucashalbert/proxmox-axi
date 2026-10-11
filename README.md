@@ -36,7 +36,7 @@ proxmox-axi create /nodes/{node}/qemu/{vmid}/clone --vmid 100 --newid 101 --name
 proxmox-axi create /nodes/pve/qemu/100/clone --help      # flags, types, required, permissions
 ```
 
-Verbs: `get`=GET, `create`=POST, `set`=PUT, `delete`=DELETE. `create`, `set` and `delete` change the server; `delete` is destructive. Preview any call with `-n`/`--dry-run`: it prints the method, URL and body (token secret redacted) and sends nothing. (`-n` always means dry-run locally; `--dry-run` yields to an endpoint's own `dry-run` parameter.)
+Verbs: `get`=GET, `create`=POST, `set`=PUT, `delete`=DELETE. `create`, `set` and `delete` change the server; `delete` is destructive. Preview any call with `-n`/`--dry-run`: it prints the method, URL and body, redacting Authorization and parameter values named like password, secret, token or key, and sends nothing. (`-n` always means dry-run locally; `--dry-run` yields to an endpoint's own `dry-run` parameter.)
 
 - Path placeholders (`{node}`, `{vmid}`) are flags: `--vmid 100`. `{node}` falls back to `PROXMOX_NODE`.
 - Parameters are flags named as in the API (`--newid`, `--net0`). Types, enums, ranges, lengths and required-ness come from the schema and are checked before any request; `pattern`/`format` are left to the server. Booleans: `--full`, `--full=0`, `--full false`. Arrays: repeat the flag.

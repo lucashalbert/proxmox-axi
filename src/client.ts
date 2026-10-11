@@ -103,7 +103,7 @@ export function send(cfg: Config, req: Req): Promise<Reply> {
           /* non-JSON body: fall back to status text */
         }
         const detail = Object.entries(json.errors ?? {}).map(([k, v]) => `${k}: ${v}`);
-        const message = [res.statusMessage, json.message?.trim(), ...detail].filter(Boolean).join("; ");
+        const message = [...new Set([res.statusMessage, json.message?.trim(), ...detail].filter(Boolean))].join("; ");
         resolve({ status: res.statusCode ?? 0, message, data: json.data });
       });
     });

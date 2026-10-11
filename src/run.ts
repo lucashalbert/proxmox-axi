@@ -116,7 +116,8 @@ export async function callCommand(verb: string, args: string[], cfg: Config): Pr
   const upid = typeof reply.data === "string" && reply.data.startsWith("UPID:") ? reply.data : undefined;
   if (upid) {
     const node = upid.split(":")[1];
-    help.push(`Run \`proxmox-axi get /nodes/${node}/tasks/${upid}/status\` to check the task`, `Run \`proxmox-axi get /nodes/${node}/tasks/${upid}/log\` for its log`);
+    const task = `'/nodes/${node}/tasks/${upid}`; // single-quoted: UPIDs contain `!` and `:`
+    help.push(`Run \`proxmox-axi get ${task}/status'\` to check the task`, `Run \`proxmox-axi get ${task}/log'\` for its log`);
     return { task: upid, help };
   }
   const s = shape(reply.data, { key: keyOf(r.template), ...parsed.control });

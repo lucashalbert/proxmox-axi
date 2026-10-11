@@ -62,7 +62,14 @@ export function parseFlags(
       control.dryRun = true;
       continue;
     }
-    if (!tok.startsWith("--")) throw bad(`Unexpected argument ${tok}`, ["Parameters are flags: --name value"]);
+    if (!tok.startsWith("--")) {
+      const prev = tokens[i - 1]?.startsWith("--") && !tokens[i - 1].includes("=") ? findParam(params, tokens[i - 1].slice(2)) : undefined;
+      if (prev?.spec.type === "boolean") {
+        const f = tokens[i - 1];
+        throw bad(`${f} is a boolean flag and does not accept "${tok}"`, [`Use ${f}, ${f}=1, or ${f}=0 (also true/false, yes/no, on/off)`]);
+      }
+      throw bad(`Unexpected argument ${tok}`, ["Parameters are flags: --name value"]);
+    }
     const eq = tok.indexOf("=");
     const name = tok.slice(2, eq < 0 ? undefined : eq);
     let inline = eq < 0 ? undefined : tok.slice(eq + 1);

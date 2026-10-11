@@ -1,8 +1,8 @@
 import { DESCRIPTION } from "./cli.js";
 
 export const SKILL_DESCRIPTION =
-  "Operate Proxmox VE through the proxmox-axi CLI - every REST API path and method (nodes, VMs and containers, storage, " +
-  "cluster, access, tasks, backups, firewall, SDN, Ceph) via one generic get/create/set/delete command. " +
+  "Operate Proxmox VE through the proxmox-axi CLI - schema-mapped REST API paths and methods (nodes, VMs and containers, storage, " +
+  "cluster, access, tasks, backups, firewall, SDN, Ceph) via one generic token-auth get/create/set/delete command. " +
   "Use whenever a task touches a Proxmox VE server: listing or inspecting VMs, storage, nodes or tasks, starting or " +
   "stopping guests, cloning, snapshots, backups, users and permissions, or calling any /api2/json path.";
 

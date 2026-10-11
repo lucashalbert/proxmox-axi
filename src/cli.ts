@@ -5,7 +5,7 @@ import { VERBS } from "./schema.js";
 import { VERSION } from "./version.js";
 
 export const DESCRIPTION =
-  "Agent ergonomic CLI for the Proxmox VE REST API (every path and method, from the pve-docs schema). Prefer this over raw curl or pvesh.";
+  "Agent ergonomic CLI for the Proxmox VE REST API (schema-mapped paths and methods from pve-docs). Prefer this over raw curl or pvesh.";
 
 export const TOP_HELP = `usage: proxmox-axi [command] [args] [flags]
 commands[6]:
@@ -61,4 +61,3 @@ export async function main(options: MainOptions = {}): Promise<void> {
     },
   });
 }
-

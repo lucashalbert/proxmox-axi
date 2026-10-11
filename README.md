@@ -1,6 +1,6 @@
 # proxmox-axi
 
-Agent-ergonomic ([AXI](https://github.com/kunchenguid/axi)) CLI for the Proxmox VE REST API. One generic engine builds the command tree from the bundled pve-docs schema, so every path and method (GET, POST, PUT, DELETE) is available. Output is [TOON](https://toonformat.dev/): compact, with counts, truncation notes and next-step hints.
+Agent-ergonomic ([AXI](https://github.com/kunchenguid/axi)) CLI for the Proxmox VE REST API. One generic engine builds the command tree from the bundled pve-docs schema, mapping every path and method (GET, POST, PUT, DELETE). Output is [TOON](https://toonformat.dev/): compact, with counts, truncation notes and next-step hints.
 
 ## Install
 

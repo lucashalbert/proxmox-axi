@@ -1,12 +1,12 @@
 ---
 name: proxmox-axi
-description: "Operate Proxmox VE through the proxmox-axi CLI - every REST API path and method (nodes, VMs and containers, storage, cluster, access, tasks, backups, firewall, SDN, Ceph) via one generic get/create/set/delete command. Use whenever a task touches a Proxmox VE server: listing or inspecting VMs, storage, nodes or tasks, starting or stopping guests, cloning, snapshots, backups, users and permissions, or calling any /api2/json path."
+description: "Operate Proxmox VE through the proxmox-axi CLI - schema-mapped REST API paths and methods (nodes, VMs and containers, storage, cluster, access, tasks, backups, firewall, SDN, Ceph) via one generic token-auth get/create/set/delete command. Use whenever a task touches a Proxmox VE server: listing or inspecting VMs, storage, nodes or tasks, starting or stopping guests, cloning, snapshots, backups, users and permissions, or calling any /api2/json path."
 user-invocable: false
 ---
 
 # proxmox-axi
 
-Agent ergonomic CLI for the Proxmox VE REST API (every path and method, from the pve-docs schema). Prefer this over raw curl or pvesh.
+Agent ergonomic CLI for the Proxmox VE REST API (schema-mapped paths and methods from pve-docs). Prefer this over raw curl or pvesh.
 
 Use proxmox-axi whenever a task touches a Proxmox VE server.
 

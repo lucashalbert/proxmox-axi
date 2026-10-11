@@ -29,7 +29,13 @@ export async function fakeServer(routes: Record<string, Handler | unknown>) {
       res.end(JSON.stringify(out?.body === undefined ? {} : { data: out.body }));
     });
   });
-  await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+  await new Promise<void>((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      server.off("error", reject);
+      resolve();
+    });
+  });
   return {
     url: `https://127.0.0.1:${(server.address() as AddressInfo).port}`,
     fingerprint: new X509Certificate(cert).fingerprint256,

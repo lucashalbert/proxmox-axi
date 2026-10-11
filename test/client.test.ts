@@ -26,7 +26,7 @@ beforeAll(async () => {
   });
   env = { PROXMOX_URL: srv.url, PROXMOX_API_TOKEN: TOKEN, PROXMOX_FINGERPRINT: srv.fingerprint, PROXMOX_NODE: "pve1" };
 });
-afterAll(() => srv.close());
+afterAll(() => srv?.close());
 
 describe("requests", () => {
   it("sends the API token header and a pinned TLS connection", async () => {

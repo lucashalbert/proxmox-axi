@@ -1,0 +1,22 @@
+{
+  "name": "proxmox-axi",
+  "version": "0.1.0",
+  "description": "AXI-compliant Proxmox VE API CLI: token-efficient TOON output, one generic engine over the pve-docs schema",
+  "type": "module",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/lucashalbert/proxmox-axi.git" },
+  "keywords": ["proxmox", "pve", "cli", "agent", "axi", "toon"],
+  "bin": { "proxmox-axi": "./dist/bin/proxmox-axi.js" },
+  "files": ["dist", "skills/proxmox-axi"],
+  "scripts": {
+    "build": "tsc && cp src/apidoc.json dist/src/",
+    "test": "vitest run",
+    "dev": "tsx bin/proxmox-axi.ts",
+    "update-schema": "tsx scripts/update-schema.ts",
+    "build:skill": "tsx scripts/build-skill.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": { "@toon-format/toon": "^2.1.0", "axi-sdk-js": "^0.1.10" },
+  "devDependencies": { "@types/node": "^22.0.0", "tsx": "^4.0.0", "typescript": "^5.7.0", "vitest": "^3.0.0" }
+}

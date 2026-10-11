@@ -97,9 +97,11 @@ export function parseFlags(
       if (spec.type === "boolean" && !/^(true|false|0|1|yes|no|on|off)$/i.test(tokens[i + 1] ?? "")) value = "1";
       else value = tokens[++i];
     }
-    if (value === undefined || (inline === undefined && value.startsWith("--"))) throw bad(`--${name} needs a value`, []);
+    const stringish = (spec.type ?? "string") === "string";
+    if (value === undefined || (inline === undefined && stringish && value.startsWith("-"))) throw bad(`--${name} needs a value`, []);
     const wired = coerce(name, spec, value);
     if (isPath) {
+      if (name in bound && bound[name] !== wired) throw bad(`--${name} conflicts with path value ${bound[name]}`, []);
       path[name] = wired;
       continue;
     }

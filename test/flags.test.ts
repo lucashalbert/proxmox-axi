@@ -35,6 +35,37 @@ describe("flag validation", () => {
     expect(r.out).toContain("--newid needs a value");
   });
 
+  it("rejects -n as an out-of-line API string value", async () => {
+    const r = await run(["create", "/nodes/{node}/qemu", "--vmid", "999", "--name", "-n"], env);
+    expect(r.code).toBe(2);
+    expect(r.out).toContain("--name needs a value");
+  });
+
+  it("keeps inline -n valid as an API string value", async () => {
+    const r = await dry("create", "/nodes/{node}/qemu", "--vmid", "999", "--name=-n");
+    expect(r.code).toBe(0);
+    expect(r.out).toContain("method: POST");
+    expect(r.out).toContain("-n");
+  });
+
+  it("rejects -n as an out-of-line path value", async () => {
+    const r = await run(["get", "/nodes/{node}/qemu", "--node", "-n"], { ...env, PROXMOX_NODE: "" });
+    expect(r.code).toBe(2);
+    expect(r.out).toContain("--node needs a value");
+  });
+
+  it("rejects path flags that conflict with literal path values", async () => {
+    const r = await run(["create", "/nodes/pve/qemu/100/status/start", "--node", "other", "-n"], env);
+    expect(r.code).toBe(2);
+    expect(r.out).toContain("--node conflicts with path value pve");
+  });
+
+  it("accepts path flags that repeat literal path values", async () => {
+    const r = await run(["create", "/nodes/pve/qemu/100/status/start", "--node", "pve", "-n"], env);
+    expect(r.code).toBe(0);
+    expect(r.out).toContain("/nodes/pve/qemu/100/status/start");
+  });
+
   it.each([
     ["fields", "--fields", "--full"],
     ["fields", "--fields=--full"],

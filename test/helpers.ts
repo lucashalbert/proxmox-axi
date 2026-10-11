@@ -8,7 +8,7 @@ import type { AddressInfo } from "node:net";
 import { main } from "../src/cli.js";
 
 export type Seen = { method: string; url: string; auth?: string; type?: string; body: string };
-type Handler = (seen: Seen) => { status?: number; body: unknown };
+type Handler = (seen: Seen) => { status?: number; body: unknown; raw?: unknown };
 
 /** HTTPS server with a throwaway self-signed cert; records every request it receives. */
 export async function fakeServer(routes: Record<string, Handler | unknown>) {
@@ -26,7 +26,7 @@ export async function fakeServer(routes: Record<string, Handler | unknown>) {
       const route = routes[`${s.method} ${s.url.replace("/api2/json", "")}`];
       const out = typeof route === "function" ? (route as Handler)(s) : { body: route };
       res.statusCode = out?.status ?? (route === undefined ? 404 : 200);
-      res.end(JSON.stringify(out?.body === undefined ? {} : { data: out.body }));
+      res.end(JSON.stringify(out?.raw ?? (out?.body === undefined ? {} : { data: out.body })));
     });
   });
   await new Promise<void>((resolve, reject) => {

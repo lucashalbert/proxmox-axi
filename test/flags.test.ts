@@ -22,7 +22,7 @@ describe("flag validation", () => {
     [["--newid", "abc"], "expects an integer"],
     [["--newid", "5"], "must be >= 100"],
     [["--newid", "101", "--format", "zip"], "must be one of: raw, qcow2, vmdk"],
-    [["--newid", "101", "--full", "maybe", "--name", "a"], "Unexpected argument maybe"],
+    [["--newid", "101", "--full", "maybe", "--name", "a"], "--full is a boolean flag"],
     [["--newid", "101", "--newid", "102"], "given more than once"],
   ])("rejects %j", async (flags, msg) => {
     const r = await dry("create", "/nodes/pve/qemu/100/clone", ...flags);

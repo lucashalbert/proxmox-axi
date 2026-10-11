@@ -22,6 +22,7 @@ beforeAll(async () => {
     "GET /nodes/pve1/services": vms.map((v) => ({ service: v.name, desc: v.notes, state: "running" })),
     "PUT /nodes/pve1/qemu/100/config": null,
     "GET /nodes/pve1/storage": () => ({ status: 403, body: null }),
+    "GET /nodes/pve1/hosts": () => ({ status: 500, body: null, raw: { message: "Internal Server Error\n" } }),
     "GET /nodes/pve1/capabilities": (s) => ({ body: [{ name: s.url }] }),
   });
   env = { PROXMOX_URL: srv.url, PROXMOX_API_TOKEN: TOKEN, PROXMOX_FINGERPRINT: srv.fingerprint, PROXMOX_NODE: "pve1" };
@@ -173,7 +174,8 @@ describe("output", () => {
   it("points at the task endpoints after an action returns a UPID", async () => {
     const r = await run(["create", "/nodes/pve1/qemu/100/status/start"], env);
     expect(r.out).toContain(`task: "${UPID}"`);
-    expect(r.out).toContain("get /nodes/pve1/tasks/");
+    expect(r.out).toContain(`get '/nodes/pve1/tasks/${UPID}/status'`);
+    expect(r.out).toContain(`get '/nodes/pve1/tasks/${UPID}/log'`);
   });
 
   it("acknowledges writes that return nothing", async () => {
@@ -185,6 +187,12 @@ describe("output", () => {
     expect(r.code).toBe(1);
     expect(r.out).toContain("HTTP_403");
     expect(r.out).toContain("lacks permission");
+  });
+
+  it("prints a repeated server error message once", async () => {
+    const r = await run(["get", "/nodes/{node}/hosts"], env);
+    expect(r.out).toContain("HTTP 500: Internal Server Error");
+    expect(r.out).not.toContain("Internal Server Error; ");
   });
 
   it("shows the dashboard with live nodes and next steps", async () => {

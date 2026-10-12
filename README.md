@@ -55,6 +55,15 @@ Checked against a live PVE 9.2 server with read-only GETs (182 endpoints reachab
 - `/cluster/nextid` and `/cluster/config/apiversion` are typed `integer` but come back as strings; `/cluster/config/totem` is typed `object` but is `null` outside a cluster.
 - Schema quirks handled: `name[n]` parameters (`net0`, `scsi1`), `allOf`/`oneOf` parameter sets (flattened, `oneOf` members optional), and path placeholders that lack a parameter entry.
 
+## Releases
+
+Releases are automated by [semantic-release](https://github.com/semantic-release/semantic-release) (`.github/workflows/release.yml`), which runs after CI passes on `main`. It picks the next SemVer from [Conventional Commits](https://www.conventionalcommits.org/), updates `CHANGELOG.md`, `package.json`, `package-lock.json` and `src/version.ts`, pushes a `chore(release): <version> [skip ci]` bot commit and a `v<version>` tag to `main`, publishes to npm and creates a GitHub release.
+
+- `feat:` -> minor; `fix:` and `perf:` -> patch; `!` after the type (`feat!:`) or a `BREAKING CHANGE:` footer -> major. Other types (`docs`, `chore`, `test`, `ci`, `refactor`) do not release.
+- PRs are squash-merged, so the **PR title must be a conventional commit message**; CI (commitlint) checks the title and commits.
+- npm publishing uses trusted publishing (OIDC) with provenance; no npm token is stored. One-time setup on npmjs.com: package settings -> Trusted Publisher -> GitHub Actions, repository `lucashalbert/proxmox-axi`, workflow filename `release.yml`.
+- 0.1.0 was published manually (tagged `v0.1.0`); semantic-release takes over from there.
+
 ## Development
 
 ```sh

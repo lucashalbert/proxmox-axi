@@ -1,0 +1,54 @@
+name: release
+
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release:
+    # Only after a green push-triggered CI on main; skip the bot's own release commit.
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      !startsWith(github.event.workflow_run.head_commit.message, 'chore(release):')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      # Trusted publishing (OIDC) needs npm >= 11.5.1.
+      - run: npm install -g npm@^11.5.1
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      # Release tooling runs via npx so it stays out of package.json / npm audit.
+      - name: semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          npx -y
+          -p semantic-release@25
+          -p @semantic-release/changelog@6
+          -p @semantic-release/git@10
+          -p @semantic-release/exec@7
+          -p conventional-changelog-conventionalcommits@10
+          semantic-release

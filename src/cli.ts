@@ -1,4 +1,4 @@
-import { AxiError, installSessionStartHooks, runAxiCli } from "axi-sdk-js";
+import { AxiError, installSessionStartHooks, runAxiCli, sessionStartHookStatus, type InstallSessionStartHooksOptions } from "axi-sdk-js";
 import { loadConfig } from "./config.js";
 import { callCommand, homeCommand, lsCommand } from "./run.js";
 import { VERBS } from "./schema.js";
@@ -37,6 +37,24 @@ Install or repair agent SessionStart hooks (Claude Code, Codex, OpenCode) so eac
 
 type MainOptions = { argv?: string[]; stdout?: { write: (s: string) => unknown }; env?: NodeJS.ProcessEnv };
 
+/** Install hooks and report what is actually present afterwards; never claims success it did not verify. */
+export function setupHooks(options: InstallSessionStartHooksOptions = {}) {
+  const errors: string[] = [];
+  installSessionStartHooks({ ...options, onError: (m) => errors.push(m) });
+  let status;
+  try {
+    status = sessionStartHookStatus(options);
+  } catch {
+    throw new AxiError("No hooks installed: not running from an installed proxmox-axi binary", "VALIDATION_ERROR", ["Install with `npm i -g proxmox-axi`, then run `proxmox-axi setup hooks`"]);
+  }
+  const agents = { "Claude Code": status.claude, Codex: status.codex, OpenCode: status.opencode };
+  const installed = Object.entries(agents).filter(([, a]) => a.installed).map(([n]) => n);
+  if (errors.length || installed.length === 0) {
+    throw new AxiError(`Hooks not fully installed${installed.length ? ` (installed: ${installed.join(", ")})` : ""}`, "RUNTIME_ERROR", errors.length ? errors : ["No agent hook was written"]);
+  }
+  return { hooks: `installed (${installed.join(", ")})`, help: ["Restart your agent session to get the dashboard at start"] };
+}
+
 export async function main(options: MainOptions = {}): Promise<void> {
   const cfg = () => loadConfig(options.env);
   const verbCmds = Object.fromEntries(Object.keys(VERBS).map((v) => [v, (args: string[]) => callCommand(v, args, cfg())]));
@@ -55,8 +73,7 @@ export async function main(options: MainOptions = {}): Promise<void> {
         if (args.length !== 1 || args[0] !== "hooks") {
           throw new AxiError("Unknown setup action", "VALIDATION_ERROR", ["Run `proxmox-axi setup hooks`"]);
         }
-        installSessionStartHooks();
-        return { hooks: "installed (Claude Code, Codex, OpenCode)", help: ["Restart your agent session to get the dashboard at start"] };
+        return setupHooks();
       },
     },
   });

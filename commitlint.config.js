@@ -1,4 +1,5 @@
 export default {
+  ignores: [(message) => /^no-mistakes(?:\([^)]+\))?!?: /.test(message)],
   extends: ['@commitlint/config-conventional'],
   parserPreset: {
     parserOpts: {
@@ -17,7 +18,6 @@ export default {
         'docs',
         'feat',
         'fix',
-        'no-mistakes',
         'perf',
         'refactor',
         'revert',

@@ -1,7 +1,7 @@
 const CELL_MAX = 120;
 const TEXT_MAX = 500;
 const FIRST = ["id", "vmid", "node", "name", "storage", "volid", "upid", "userid", "status", "type", "state", "content"];
-const MAX_COLS = 4; // AXI principle 2: 3-4 fields per list item; --fields/--full for more
+const MAX_COLS = 4; // AXI principle 2: 3-4 fields per list item; --fields exposes more columns
 
 type Row = Record<string, unknown>;
 export type Shaped = { out: Record<string, unknown>; clipped: boolean; total?: number; shown?: number };

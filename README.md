@@ -40,7 +40,7 @@ Verbs: `get`=GET, `create`=POST, `set`=PUT, `delete`=DELETE. `create`, `set` and
 
 - Path placeholders (`{node}`, `{vmid}`) are flags: `--vmid 100`. `{node}` falls back to `PROXMOX_NODE`.
 - Parameters are flags named as in the API (`--newid`, `--net0`). Types, enums, ranges, lengths and required-ness come from the schema and are checked before any request; `pattern`/`format` are left to the server. Booleans: `--full`, `--full=0`, `--full false`. Arrays: repeat the flag.
-- Output: `--fields a,b|all` picks columns, `--limit N` (default 100, `0` = all), `--full` disables text truncation. An endpoint that defines a parameter with one of these names (for example `full`, `limit`) takes it as its own.
+- Output: lists default to 4 columns (id-like first); `--fields a,b|all` picks columns, `--limit N` (default 100, `0` = all), `--full` disables text truncation. Mutations the server rejects as already done (starting a running VM, stopping a stopped one, creating what exists) exit 0 with a `no-op` result. An endpoint that defines a parameter with one of these names (for example `full`, `limit`) takes it as its own.
 - Unknown flags, bad values and missing required flags exit 2 with the valid flags listed; API errors exit 1.
 - Task-returning calls (UPID) print the follow-up `get` commands for status and log.
 

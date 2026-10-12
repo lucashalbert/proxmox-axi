@@ -1,5 +1,5 @@
 import { AxiError } from "axi-sdk-js";
-import { buildRequest, httpError, redacted, send } from "./client.js";
+import { buildRequest, httpError, redacted, send, type Reply } from "./client.js";
 import { CONFIG_HELP, type Config } from "./config.js";
 import { parseFlags, pathNamesOf } from "./flags.js";
 import { keyOf, shape } from "./output.js";
@@ -81,6 +81,17 @@ export const VERB_HELP: Record<string, string> = Object.fromEntries(
   ),
 );
 
+const ALREADY_STATUS = new Set([400, 409, 500]);
+const ALREADY_MSG = /already (running|stopped|started|exists?)\b/i;
+const NOT_RUNNING_MSG = /not running/i;
+
+/** Mutation whose server error only says the resource is already as requested (idempotent no-op). */
+function isAlreadyInState(method: string, path: string, r: Reply): boolean {
+  if (!WRITE(method) || !ALREADY_STATUS.has(r.status)) return false;
+  if (ALREADY_MSG.test(r.message)) return true;
+  return NOT_RUNNING_MSG.test(r.message) && /\/status\/(stop|shutdown)$/.test(path);
+}
+
 export async function callCommand(verb: string, args: string[], cfg: Config): Promise<Out | string> {
   const method = VERBS[verb];
   const path = args[0];
@@ -110,7 +121,10 @@ export async function callCommand(verb: string, args: string[], cfg: Config): Pr
     return { "dry-run": redacted(req), help: ["Run again without --dry-run to send the request"] };
   }
   const reply = await send(conf, req);
-  if (reply.status >= 400) throw httpError(reply);
+  if (reply.status >= 400) {
+    if (isAlreadyInState(method, real, reply)) return { result: `no-op: already in requested state (${method} ${real}; HTTP ${reply.status}: ${reply.message})` };
+    throw httpError(reply);
+  }
 
   const help: string[] = [];
   const upid = typeof reply.data === "string" && reply.data.startsWith("UPID:") ? reply.data : undefined;

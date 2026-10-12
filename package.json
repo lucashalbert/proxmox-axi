@@ -32,7 +32,7 @@
     "prepublishOnly": "npm run build"
   },
   "engines": {
-    "node": ">=20.19"
+    "node": ">=20"
   },
   "dependencies": {
     "@toon-format/toon": "^2.1.0",

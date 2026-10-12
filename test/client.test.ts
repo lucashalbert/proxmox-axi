@@ -25,8 +25,10 @@ beforeAll(async () => {
     "GET /nodes/pve1/hosts": () => ({ status: 500, body: null, raw: { message: "Internal Server Error\n" } }),
     "POST /nodes/pve1/qemu/101/status/start": () => ({ status: 500, body: null, raw: { message: "VM 101 already running" } }),
     "POST /nodes/pve1/qemu/102/status/stop": () => ({ status: 500, body: null, raw: { message: "VM 102 not running" } }),
+    "POST /nodes/pve1/qemu/105/status/shutdown": () => ({ status: 500, body: null, raw: { message: "VM 105 already stopped" } }),
     "POST /nodes/pve1/qemu/103/status/start": () => ({ status: 500, body: null, raw: { message: "start failed: no disk" } }),
-    "POST /nodes/pve1/qemu/104/status/reset": () => ({ status: 500, body: null, raw: { message: "VM 104 not running" } }),
+    "POST /nodes/pve1/qemu/104/status/reset": () => ({ status: 500, body: null, raw: { message: "VM 104 already stopped" } }),
+    "POST /pools": () => ({ status: 409, body: null, raw: { message: "pool already exists" } }),
     "GET /nodes/pve1/capabilities": (s) => ({ body: [{ name: s.url }] }),
   });
   env = { PROXMOX_URL: srv.url, PROXMOX_API_TOKEN: TOKEN, PROXMOX_FINGERPRINT: srv.fingerprint, PROXMOX_NODE: "pve1" };
@@ -199,8 +201,14 @@ describe("output", () => {
   });
 
   it("turns already-in-that-state server errors into an exit-0 no-op", async () => {
-    for (const path of ["/nodes/pve1/qemu/101/status/start", "/nodes/pve1/qemu/102/status/stop"]) {
-      const r = await run(["create", path], env);
+    const actions = [
+      ["create", "/nodes/pve1/qemu/101/status/start"],
+      ["create", "/nodes/pve1/qemu/102/status/stop"],
+      ["create", "/nodes/pve1/qemu/105/status/shutdown"],
+      ["create", "/pools", "--poolid", "infra"],
+    ];
+    for (const args of actions) {
+      const r = await run(args, env);
       expect(r.code).toBe(0);
       expect(r.out).toContain("no-op: already in requested state");
     }

@@ -85,7 +85,7 @@ const ALREADY_STATUS = new Set([400, 409, 500]);
 const ALREADY_RUNNING_MSG = /already running\b/i;
 const ALREADY_STOPPED_MSG = /already stopped\b/i;
 
-/** Mutation whose server error only says the resource is already as requested (idempotent no-op). */
+/** VM status action whose server error says the guest is already as requested (idempotent no-op). */
 function isAlreadyInState(method: string, path: string, r: Reply): boolean {
   if (!WRITE(method) || !ALREADY_STATUS.has(r.status)) return false;
   const action = path.match(/\/status\/([^/]+)$/)?.[1];

@@ -84,16 +84,14 @@ export const VERB_HELP: Record<string, string> = Object.fromEntries(
 const ALREADY_STATUS = new Set([400, 409, 500]);
 const ALREADY_RUNNING_MSG = /already running\b/i;
 const ALREADY_STOPPED_MSG = /already stopped\b/i;
-const ALREADY_EXISTS_MSG = /already exists?\b/i;
-const NOT_RUNNING_MSG = /not running/i;
 
 /** Mutation whose server error only says the resource is already as requested (idempotent no-op). */
 function isAlreadyInState(method: string, path: string, r: Reply): boolean {
   if (!WRITE(method) || !ALREADY_STATUS.has(r.status)) return false;
   const action = path.match(/\/status\/([^/]+)$/)?.[1];
   if (action === "start") return ALREADY_RUNNING_MSG.test(r.message);
-  if (action === "stop" || action === "shutdown") return ALREADY_STOPPED_MSG.test(r.message) || NOT_RUNNING_MSG.test(r.message);
-  return method === "POST" && !action && ALREADY_EXISTS_MSG.test(r.message);
+  if (action === "stop" || action === "shutdown") return ALREADY_STOPPED_MSG.test(r.message);
+  return false;
 }
 
 export async function callCommand(verb: string, args: string[], cfg: Config): Promise<Out | string> {

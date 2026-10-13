@@ -23,6 +23,14 @@ beforeAll(async () => {
     "PUT /nodes/pve1/qemu/100/config": null,
     "GET /nodes/pve1/storage": () => ({ status: 403, body: null }),
     "GET /nodes/pve1/hosts": () => ({ status: 500, body: null, raw: { message: "Internal Server Error\n" } }),
+    "POST /nodes/pve1/qemu/101/status/start": () => ({ status: 500, body: null, raw: { message: "VM 101 already running" } }),
+    "POST /nodes/pve1/qemu/102/status/stop": () => ({ status: 500, body: null, raw: { message: "VM 102 already stopped" } }),
+    "POST /nodes/pve1/qemu/105/status/shutdown": () => ({ status: 500, body: null, raw: { message: "VM 105 already stopped" } }),
+    "POST /nodes/pve1/qemu/103/status/start": () => ({ status: 500, body: null, raw: { message: "start failed: no disk" } }),
+    "POST /nodes/pve1/qemu/104/status/reset": () => ({ status: 500, body: null, raw: { message: "VM 104 already stopped" } }),
+    "POST /nodes/pve1/qemu/106/status/stop": () => ({ status: 500, body: null, raw: { message: "guest agent is not running" } }),
+    "POST /nodes/pve1/qemu/107/status/shutdown": () => ({ status: 500, body: null, raw: { message: "guest agent is not running" } }),
+    "POST /pools": () => ({ status: 409, body: null, raw: { message: "pool already exists" } }),
     "GET /nodes/pve1/capabilities": (s) => ({ body: [{ name: s.url }] }),
   });
   env = { PROXMOX_URL: srv.url, PROXMOX_API_TOKEN: TOKEN, PROXMOX_FINGERPRINT: srv.fingerprint, PROXMOX_NODE: "pve1" };
@@ -148,9 +156,14 @@ describe("TLS", () => {
 describe("output", () => {
   it("shows a compact table with id-like columns first and a count when limited", async () => {
     const r = await run(["get", "/nodes/{node}/qemu", "--limit", "2"], env);
-    expect(r.out).toMatch(/qemu\[2\]\{vmid,name,status,cpu,notes\}:/);
+    expect(r.out).toMatch(/qemu\[2\]\{vmid,name,status,cpu\}:/);
     expect(r.out).toContain("count: 2 of 5 total");
     expect(r.out).toContain("--limit 0");
+    expect(r.out).not.toContain("notes");
+  });
+
+  it("clips long cells in an explicitly selected column and points at --full", async () => {
+    const r = await run(["get", "/nodes/{node}/qemu", "--limit", "1", "--fields", "vmid,notes"], env);
     expect(r.out).not.toContain("n".repeat(121));
     expect(r.out).toContain("--full");
   });
@@ -187,6 +200,33 @@ describe("output", () => {
     expect(r.code).toBe(1);
     expect(r.out).toContain("HTTP_403");
     expect(r.out).toContain("lacks permission");
+  });
+
+  it("turns already-in-that-state server errors into an exit-0 no-op", async () => {
+    const actions = [
+      ["create", "/nodes/pve1/qemu/101/status/start"],
+      ["create", "/nodes/pve1/qemu/102/status/stop"],
+      ["create", "/nodes/pve1/qemu/105/status/shutdown"],
+    ];
+    for (const args of actions) {
+      const r = await run(args, env);
+      expect(r.code).toBe(0);
+      expect(r.out).toContain("no-op: already in requested state");
+    }
+  });
+
+  it("keeps other write errors structured and non-zero", async () => {
+    for (const path of ["/nodes/pve1/qemu/103/status/start", "/nodes/pve1/qemu/104/status/reset", "/nodes/pve1/qemu/106/status/stop", "/nodes/pve1/qemu/107/status/shutdown"]) {
+      const r = await run(["create", path], env);
+      expect(r.code).toBe(1);
+      expect(r.out).toContain("HTTP_500");
+    }
+  });
+
+  it("keeps create conflicts as non-zero structured errors", async () => {
+    const r = await run(["create", "/pools", "--poolid", "infra"], env);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("HTTP_409");
   });
 
   it("prints a repeated server error message once", async () => {
